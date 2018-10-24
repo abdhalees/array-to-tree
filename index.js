@@ -5,25 +5,22 @@ const getTiersHash = list =>
     return acc;
   }, {});
 
+const getParent = (tiersHash, node) => {
+  const path = node.tier.split('-');
+  path.pop();
+  if (path.length === 0) return null;
+  const parentTier = path.join('-');
+  if (tiersHash[parentTier]) return `${tiersHash[parentTier]}-${parentTier}`;
+  return getParent(tiersHash, { start: node.start, tier: parentTier });
+};
+
 // create a hash with start-tiers as key and get parent for each node
 const getHashTable = (list, tiersHash) =>
   list.reduce(
     (acc, curr) => {
-      if (acc.tiers[curr.tier]) {
-        curr.parent = `${tiersHash[curr.tier]}-${curr.tier}`;
-      } else {
-        const path = curr.tier.split('-');
-        let foundParent = false;
-        while (!foundParent) {
-          path.pop();
-          if (path.length === 0) break;
-          const parentTier = path.join('-');
-          if (tiersHash[parentTier]) {
-            curr.parent = `${tiersHash[parentTier]}-${parentTier}`;
-            foundParent = true;
-          }
-        }
-      }
+      curr.parent = acc.tiers[curr.tier]
+        ? `${tiersHash[curr.tier]}-${curr.tier}`
+        : (curr.parent = getParent(tiersHash, curr));
       curr.children = [];
       acc.hash[`${curr.start}-${curr.tier}`] = curr;
       acc.tiers[curr.tier] = 1;
@@ -53,8 +50,8 @@ module.exports = list => {
     if (!hash[node].parent) tree.push(hash[node]);
     else {
       hash[hash[node].parent].children.push(hash[node]);
-      delete hash[node]['parent'];
     }
+    delete hash[node]['parent'];
   });
 
   return tree;
