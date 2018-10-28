@@ -20,7 +20,7 @@ const getHashTable = (list, tiersHash) =>
     (acc, curr) => {
       curr.parent = acc.tiers[curr.tier]
         ? `${tiersHash[curr.tier]}-${curr.tier}`
-        : (curr.parent = getParent(tiersHash, curr));
+        : getParent(tiersHash, curr);
       curr.children = [];
       acc.hash[`${curr.start}-${curr.tier}`] = curr;
       acc.tiers[curr.tier] = 1;
